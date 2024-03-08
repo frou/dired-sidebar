@@ -36,9 +36,8 @@
 
 (require 'dired)
 (require 'dired-subtree)
+(require 'face-remap)
 (eval-when-compile (require 'subr-x)) ; `if-let*' and `when-let*'
-
-(declare-function buffer-face-mode-invoke "face-remap")
 
 ;; Compatibility
 
@@ -60,17 +59,8 @@
 layout."
   :group 'files)
 
-(defcustom dired-sidebar-use-custom-font nil
-  "Show `dired-sidebar' with custom font.
-
-This face can be customized using `dired-sidebar-face'."
-  :type 'boolean
-  :group 'dired-sidebar)
-
-(defface dired-sidebar-face nil
-  "Face used by `dired-sidebar' for custom font.
-
-This only takes effect if `dired-sidebar-use-custom-font' is true."
+(defface dired-sidebar-face '((t :inherit default))
+  "Font face used for `dired-sidebar'."
   :group 'dired-sidebar)
 
 (defcustom dired-sidebar-use-custom-modeline t
@@ -514,8 +504,12 @@ Works around marker pointing to wrong buffer in Emacs 25."
        (advice-add x :around #'dired-sidebar-advice-hide-temporarily))
      dired-sidebar-toggle-hidden-commands))
 
-  (when dired-sidebar-use-custom-font
-    (dired-sidebar-set-font))
+  ;; TODO: Could gate enabling buffer-face-mode with the following, but maybe that is a premature optimisation.
+  ;;       (when (face-differs-from-default-p 'dired-sidebar-face) ... )
+  (buffer-face-set 'dired-sidebar-face)
+  ;; TODO: Modify the `fringe' face (in the sidebar window) to have the same background colour as `dired-sidebar-face'
+  ;;       https://www.gnu.org/software/emacs/manual/html_node/elisp/Face-Remapping.html
+  ;;       Or should I just remap `default' to `dired-sidebar-face' and that will take care of both above and this?
 
   (when dired-sidebar-use-custom-modeline
     (dired-sidebar-set-mode-line))
@@ -876,15 +870,6 @@ the relevant file-directory clicked on by the mouse."
             (with-current-buffer buffer
               (rename-buffer name)))
           buffer)))))
-
-(defun dired-sidebar-set-font ()
-  "Customize font in `dired-sidebar'.
-
-Set font to a variable width (proportional) in the current buffer."
-  (interactive)
-  (require 'face-remap)
-  (setq-local buffer-face-mode-face 'dired-sidebar-face)
-  (buffer-face-mode-invoke 'variable-pitch t))
 
 (defun dired-sidebar-set-mode-line ()
   "Customize modeline in `dired-sidebar'."
