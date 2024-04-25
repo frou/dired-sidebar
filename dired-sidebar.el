@@ -59,7 +59,8 @@
 layout."
   :group 'files)
 
-(defface dired-sidebar-face '((t :inherit default))
+;; https://list.orgmode.org/orgmode/41956a5a-44c2-c1ea-e1e5-d018a8656e48@gmail.com/t/#u
+(defface dired-sidebar '((t :inherit default))
   "Font face used for `dired-sidebar'."
   :group 'dired-sidebar)
 
@@ -504,12 +505,9 @@ Works around marker pointing to wrong buffer in Emacs 25."
        (advice-add x :around #'dired-sidebar-advice-hide-temporarily))
      dired-sidebar-toggle-hidden-commands))
 
-  ;; TODO: Could gate enabling buffer-face-mode with the following, but maybe that is a premature optimisation.
-  ;;       (when (face-differs-from-default-p 'dired-sidebar-face) ... )
-  (buffer-face-set 'dired-sidebar-face)
-  ;; TODO: Modify the `fringe' face (in the sidebar window) to have the same background colour as `dired-sidebar-face'
-  ;;       https://www.gnu.org/software/emacs/manual/html_node/elisp/Face-Remapping.html
-  ;;       Or should I just remap `default' to `dired-sidebar-face' and that will take care of both above and this?
+  (when (face-differs-from-default-p 'dired-sidebar)
+    (face-remap-add-relative 'default 'dired-sidebar)
+    (face-remap-add-relative 'fringe 'dired-sidebar))
 
   (when dired-sidebar-use-custom-modeline
     (dired-sidebar-set-mode-line))
